@@ -1,5 +1,162 @@
 {{ define "content" }}
-<h2>Dashboard</h2>
-<p>Welcome to the system dashboard.</p>
-<button hx-get="/page/settings" hx-target="#main" hx-push-url="true">Go to Settings</button>
+<div class="container-fluid">
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+  </div>
+
+  <!-- Cards Row -->
+  <div class="row">
+    <!-- Status Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                System Status</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">Online</div>
+            </div>
+            <div class="col-auto">
+              <i class="bi bi-check-circle-fill text-success fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Traffic Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                Traffic</div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">1.2 Gbps</div>
+            </div>
+            <div class="col-auto">
+              <i class="bi bi-graph-up text-success fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CPU Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                CPU Usage</div>
+              <div class="row no-gutters align-items-center">
+                <div class="col-auto">
+                  <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">30%</div>
+                </div>
+                <div class="col">
+                  <div class="progress progress-sm mr-2">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: 30%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="bi bi-cpu fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Memory Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+      <div class="card border-left-warning shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                Memory Usage</div>
+              <div class="row no-gutters align-items-center">
+                <div class="col-auto">
+                  <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">65%</div>
+                </div>
+                <div class="col">
+                  <div class="progress progress-sm mr-2">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 65%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="bi bi-memory fs-2"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Row -->
+  <div class="row">
+    <!-- Activity Section -->
+    <div class="col-lg-8 mb-4">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+          <h6 class="m-0 font-weight-bold text-primary">System Activity</h6>
+        </div>
+        <div class="card-body">
+          <div class="list-group">
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">System backup completed</h5>
+                <small>3 mins ago</small>
+              </div>
+              <p class="mb-1">Scheduled backup was successfully completed.</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">User login</h5>
+                <small>15 mins ago</small>
+              </div>
+              <p class="mb-1">Admin user logged in from 192.168.1.5</p>
+            </a>
+            <a href="#" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">Configuration updated</h5>
+                <small>1 hour ago</small>
+              </div>
+              <p class="mb-1">System configuration was updated by admin.</p>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="col-lg-4 mb-4">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-primary" type="button" hx-get="/page/settings" hx-target="#main-content" hx-push-url="true">
+              <i class="bi bi-gear me-2"></i>Configure Settings
+            </button>
+            <button class="btn btn-success" type="button">
+              <i class="bi bi-cloud-arrow-up me-2"></i>Backup Now
+            </button>
+            <button class="btn btn-info" type="button">
+              <i class="bi bi-arrow-repeat me-2"></i>Refresh System
+            </button>
+            <button class="btn btn-warning" type="button">
+              <i class="bi bi-envelope me-2"></i>Send Notification
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {{ end }}

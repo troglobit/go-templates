@@ -2,50 +2,112 @@
 <html>
   <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Web Management Interface</title>
+    <!-- HTMX for interactivity -->
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
     <style>
       body {
-        font-family: sans-serif;
-        margin: 0;
+        min-height: 100vh;
         display: flex;
-        height: 100vh;
+        flex-direction: column;
       }
-
-      nav {
-        background: #222;
-        color: white;
-        padding: 1em;
-        width: 200px;
+      
+      .sidebar {
+        min-height: calc(100vh - 56px);
+        background-color: #f8f9fa;
+        border-right: 1px solid #dee2e6;
       }
-
-      nav a {
+      
+      .nav-link {
 	cursor: pointer;
-        display: block;
-        color: #ccc;
-        text-decoration: none;
-        margin: 0.5em 0;
+        color: #495057;
+        border-radius: 0;
       }
-
-      nav a:hover {
-        color: white;
+      
+      .nav-link:hover, .nav-link.active {
+        background-color: #e9ecef;
       }
-
-      main {
-        padding: 1em;
-        flex: 1;
-        overflow-y: auto;
+      
+      .content {
+        padding: 20px;
       }
     </style>
   </head>
   <body>
-    <nav>
-      <a hx-get="/page/dashboard" hx-target="#main" hx-push-url="true">Dashboard</a>
-      <a hx-get="/page/settings" hx-target="#main" hx-push-url="true">Settings</a>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">Management Interface</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
     </nav>
 
-    <main id="main">
-      {{ template "content" . }}
-    </main>
+    <div class="container-fluid flex-grow-1">
+      <div class="row h-100">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 sidebar p-0">
+          <div class="d-flex flex-column flex-shrink-0 p-3">
+            <ul class="nav nav-pills flex-column mb-auto">
+              <li class="nav-item">
+                <a class="nav-link" hx-get="/page/dashboard" hx-target="#main-content" hx-push-url="true">
+                  <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" hx-get="/page/settings" hx-target="#main-content" hx-push-url="true">
+                  <i class="bi bi-gear me-2"></i>Settings
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" hx-get="/page/users" hx-target="#main-content" hx-push-url="true">
+                  <i class="bi bi-people me-2"></i>Users
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 content">
+          <div id="main-content">
+            {{ template "content" . }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Set active nav item based on URL -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const path = window.location.pathname;
+        document.querySelectorAll('.nav-link').forEach(link => {
+          if (link.getAttribute('hx-get') === path) {
+            link.classList.add('active');
+          }
+        });
+      });
+      
+      // Update active nav item after HTMX navigation
+      document.body.addEventListener('htmx:afterSettle', function() {
+        const path = window.location.pathname;
+        document.querySelectorAll('.nav-link').forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('hx-get') === path) {
+            link.classList.add('active');
+          }
+        });
+      });
+    </script>
   </body>
 </html>

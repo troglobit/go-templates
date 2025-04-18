@@ -1,5 +1,128 @@
 {{ define "content" }}
-<h2>Settings</h2>
-<p>Configure system settings here.</p>
-<button hx-get="/page/dashboard" hx-target="#main" hx-push-url="true">Back to Dashboard</button>
+<div class="container-fluid">
+  <div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Settings</h1>
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">System Configuration</h6>
+        </div>
+        <div class="card-body">
+          <form>
+            <!-- General Settings Section -->
+            <div class="mb-4">
+              <h5 class="mb-3 border-bottom pb-2">General Settings</h5>
+              
+              <div class="mb-3 row">
+                <label for="systemName" class="col-sm-3 col-form-label">System Name</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" id="systemName" value="Production Server">
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="adminEmail" class="col-sm-3 col-form-label">Admin Email</label>
+                <div class="col-sm-9">
+                  <input type="email" class="form-control" id="adminEmail" value="admin@example.com">
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="timezone" class="col-sm-3 col-form-label">Timezone</label>
+                <div class="col-sm-9">
+                  <select class="form-select" id="timezone">
+                    <option value="UTC" selected>UTC</option>
+                    <option value="America/New_York">Eastern Time (US & Canada)</option>
+                    <option value="America/Chicago">Central Time (US & Canada)</option>
+                    <option value="America/Denver">Mountain Time (US & Canada)</option>
+                    <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Network Settings Section -->
+            <div class="mb-4">
+              <h5 class="mb-3 border-bottom pb-2">Network Settings</h5>
+              
+              <div class="mb-3 row">
+                <label for="hostname" class="col-sm-3 col-form-label">Hostname</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" id="hostname" value="server1.example.com">
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="ipAddress" class="col-sm-3 col-form-label">IP Address</label>
+                <div class="col-sm-9">
+                  <input type="text" class="form-control" id="ipAddress" value="192.168.1.100">
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="port" class="col-sm-3 col-form-label">HTTP Port</label>
+                <div class="col-sm-9">
+                  <input type="number" class="form-control" id="port" value="8080">
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <div class="col-sm-3">SSL Enabled</div>
+                <div class="col-sm-9">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="sslEnabled" checked>
+                    <label class="form-check-label" for="sslEnabled">Enable HTTPS</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Security Settings Section -->
+            <div class="mb-4">
+              <h5 class="mb-3 border-bottom pb-2">Security Settings</h5>
+              
+              <div class="mb-3 row">
+                <label for="sessionTimeout" class="col-sm-3 col-form-label">Session Timeout</label>
+                <div class="col-sm-9">
+                  <select class="form-select" id="sessionTimeout">
+                    <option value="15">15 minutes</option>
+                    <option value="30" selected>30 minutes</option>
+                    <option value="60">1 hour</option>
+                    <option value="120">2 hours</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <div class="col-sm-3">Failed Login Lockout</div>
+                <div class="col-sm-9">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="loginLockout" checked>
+                    <label class="form-check-label" for="loginLockout">Enable account lockout after failed logins</label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mb-3 row">
+                <label for="failedAttempts" class="col-sm-3 col-form-label">Failed Attempts Before Lockout</label>
+                <div class="col-sm-9">
+                  <input type="number" class="form-control" id="failedAttempts" value="5">
+                </div>
+              </div>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="d-flex justify-content-end">
+              <button type="button" class="btn btn-secondary me-2">Reset to Default</button>
+              <button type="button" class="btn btn-primary">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {{ end }}

@@ -7,6 +7,9 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type contextKey string
@@ -18,18 +21,30 @@ var templates map[string]*template.Template
 func main() {
 	loadTemplates()
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/page/", pageHandler)
-	// mux.Handle("/", http.FileServer(http.Dir("static")))
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// Create a new router using Gorilla Mux
+	r := mux.NewRouter()
+
+	// Apply middlewares
+	r.Use(loggingMiddleware)
+	r.Use(htmxMiddleware)
+
+	// Define routes
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	r.HandleFunc("/page/{name}", pageHandler)
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/page/dashboard", http.StatusSeeOther)
 	})
 
-	log.Println("Listening on :8080")
-	err := http.ListenAndServe(":8080", htmxMiddleware(mux))
-	if err != nil {
-		log.Fatal(err)
+	// Create server with timeouts for better security
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         ":8080",
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
 	}
+
+	log.Println("Listening on :8080")
+	log.Fatal(srv.ListenAndServe())
 }
 
 func loadTemplates() {
@@ -52,6 +67,19 @@ func loadTemplates() {
 	}
 }
 
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		next.ServeHTTP(w, r)
+		log.Printf(
+			"%s %s %s",
+			r.Method,
+			r.RequestURI,
+			time.Since(start),
+		)
+	})
+}
+
 func htmxMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		isHTMX := r.Header.Get("HX-Request") == "true"
@@ -61,7 +89,9 @@ func htmxMiddleware(next http.Handler) http.Handler {
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
-	page := filepath.Base(r.URL.Path[len("/page/"):])
+	vars := mux.Vars(r)
+	page := vars["name"]
+
 	tmpl, ok := templates[page]
 	if !ok {
 		http.NotFound(w, r)
@@ -69,7 +99,7 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := map[string]any{
-		"Title": page,
+		"Title": strings.Title(page),
 	}
 
 	isHTMX := r.Context().Value(keyIsHTMX).(bool)
