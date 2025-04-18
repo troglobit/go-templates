@@ -20,7 +20,10 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/page/", pageHandler)
-	mux.Handle("/", http.FileServer(http.Dir("static")))
+	// mux.Handle("/", http.FileServer(http.Dir("static")))
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/page/dashboard", http.StatusSeeOther)
+	})
 
 	log.Println("Listening on :8080")
 	err := http.ListenAndServe(":8080", htmxMiddleware(mux))

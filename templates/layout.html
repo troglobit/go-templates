@@ -1,18 +1,51 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="UTF-8">
-    <title>{{ .Title }}</title>
+    <title>Web Management Interface</title>
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
-</head>
-<body>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0;
+        display: flex;
+        height: 100vh;
+      }
+
+      nav {
+        background: #222;
+        color: white;
+        padding: 1em;
+        width: 200px;
+      }
+
+      nav a {
+	cursor: pointer;
+        display: block;
+        color: #ccc;
+        text-decoration: none;
+        margin: 0.5em 0;
+      }
+
+      nav a:hover {
+        color: white;
+      }
+
+      main {
+        padding: 1em;
+        flex: 1;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
     <nav>
-        <a hx-get="/page/dashboard" hx-target="#main" hx-push-url="true">Dashboard</a>
-        <a hx-get="/page/settings" hx-target="#main" hx-push-url="true">Settings</a>
+      <a hx-get="/page/dashboard" hx-target="#main" hx-push-url="true">Dashboard</a>
+      <a hx-get="/page/settings" hx-target="#main" hx-push-url="true">Settings</a>
     </nav>
 
     <main id="main">
       {{ template "content" . }}
     </main>
-</body>
+  </body>
 </html>
