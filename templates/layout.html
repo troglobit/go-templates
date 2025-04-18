@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ .Title }}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body>
+    <nav>
+        <a hx-get="/page/dashboard" hx-target="#main" hx-push-url="true">Dashboard</a>
+        <a hx-get="/page/settings" hx-target="#main" hx-push-url="true">Settings</a>
+    </nav>
+
+    <main id="main">
+      {{ template "content" . }}
+    </main>
+</body>
+</html>
