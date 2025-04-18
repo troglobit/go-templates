@@ -1,43 +1,78 @@
 package main
 
 import (
+	"context"
 	"html/template"
+	"log"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
-func renderTemplate(w http.ResponseWriter, name string, data any, full bool) {
-	files := []string{filepath.Join("templates", name+".html")}
-	if full {
-		files = append([]string{"templates/layout.html"}, files...)
+type contextKey string
+
+const keyIsHTMX contextKey = "isHTMX"
+
+var templates map[string]*template.Template
+
+func main() {
+	loadTemplates()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/page/", pageHandler)
+	mux.Handle("/", http.FileServer(http.Dir("static")))
+
+	log.Println("Listening on :8080")
+	err := http.ListenAndServe(":8080", htmxMiddleware(mux))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func loadTemplates() {
+	templates = make(map[string]*template.Template)
+
+	layout := "templates/layout.html"
+	pages, err := filepath.Glob("templates/*.html")
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	tmpl := template.Must(template.ParseFiles(files...))
+	for _, page := range pages {
+		if strings.HasSuffix(page, "layout.html") {
+			continue
+		}
 
-	if full {
-		tmpl.ExecuteTemplate(w, "layout.html", data)
-	} else {
-		tmpl.ExecuteTemplate(w, "content", data)
+		name := strings.TrimSuffix(filepath.Base(page), ".html")
+		tmpl := template.Must(template.ParseFiles(layout, page))
+		templates[name] = tmpl
 	}
+}
+
+func htmxMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		isHTMX := r.Header.Get("HX-Request") == "true"
+		ctx := context.WithValue(r.Context(), keyIsHTMX, isHTMX)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
 	page := filepath.Base(r.URL.Path[len("/page/"):])
-	if page == "" {
+	tmpl, ok := templates[page]
+	if !ok {
 		http.NotFound(w, r)
 		return
 	}
 
-	full := r.Header.Get("HX-Request") != "true"
-
-	renderTemplate(w, page, map[string]any{
+	data := map[string]any{
 		"Title": page,
-	}, full)
-}
+	}
 
-func main() {
-	http.HandleFunc("/page/", pageHandler)
-	http.Handle("/", http.FileServer(http.Dir("static")))
-
-	http.ListenAndServe(":8080", nil)
+	isHTMX := r.Context().Value(keyIsHTMX).(bool)
+	if isHTMX {
+		tmpl.ExecuteTemplate(w, "content", data)
+	} else {
+		tmpl.ExecuteTemplate(w, "layout.html", data)
+	}
 }
