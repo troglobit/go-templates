@@ -6,14 +6,19 @@ import (
 	"path/filepath"
 )
 
-func renderTemplate(w http.ResponseWriter, name string, data any) {
-	tmplFiles := []string{
-		"templates/layout.html",
-		filepath.Join("templates", name+".html"),
+func renderTemplate(w http.ResponseWriter, name string, data any, full bool) {
+	files := []string{filepath.Join("templates", name+".html")}
+	if full {
+		files = append([]string{"templates/layout.html"}, files...)
 	}
 
-	tmpl := template.Must(template.ParseFiles(tmplFiles...))
-	tmpl.ExecuteTemplate(w, "layout.html", data)
+	tmpl := template.Must(template.ParseFiles(files...))
+
+	if full {
+		tmpl.ExecuteTemplate(w, "layout.html", data)
+	} else {
+		tmpl.ExecuteTemplate(w, "content", data)
+	}
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
@@ -23,9 +28,11 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	full := r.Header.Get("HX-Request") != "true"
+
 	renderTemplate(w, page, map[string]any{
 		"Title": page,
-	})
+	}, full)
 }
 
 func main() {
