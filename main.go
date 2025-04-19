@@ -1,96 +1,85 @@
 package main
 
 import (
-	"context"
+	"embed"
 	"html/template"
 	"log"
 	"net/http"
-	"path/filepath"
 	"strings"
-	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
-type contextKey string
-
-const keyIsHTMX contextKey = "isHTMX"
+//go:embed templates
+var templatesFS embed.FS
 
 var templates map[string]*template.Template
 
 func main() {
-	loadTemplates()
+	if err := loadTemplates(); err != nil {
+		log.Fatal("Failed to load templates:", err)
+	}
 
-	// Create a new router using Gorilla Mux
-	r := mux.NewRouter()
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
-	// Apply middlewares
-	r.Use(loggingMiddleware)
-	r.Use(htmxMiddleware)
-
-	// Define routes
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	r.HandleFunc("/page/{name}", pageHandler)
-	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/page/dashboard", http.StatusSeeOther)
 	})
-
-	// Create server with timeouts for better security
-	srv := &http.Server{
-		Handler:      r,
-		Addr:         ":8080",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
-	}
+	r.Get("/page/{name}", pageHandler)
 
 	log.Println("Listening on :8080")
-	log.Fatal(srv.ListenAndServe())
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
-func loadTemplates() {
+func loadTemplates() error {
 	templates = make(map[string]*template.Template)
 
-	layout := "templates/layout.html"
-	pages, err := filepath.Glob("templates/*.html")
+	tmplFiles, err := templatesFS.ReadDir("templates")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	for _, page := range pages {
-		if strings.HasSuffix(page, "layout.html") {
+	layoutContent, err := templatesFS.ReadFile("templates/layout.html")
+	if err != nil {
+		return err
+	}
+
+	for _, file := range tmplFiles {
+		if file.Name() == "layout.html" || file.IsDir() {
 			continue
 		}
 
-		name := strings.TrimSuffix(filepath.Base(page), ".html")
-		tmpl := template.Must(template.ParseFiles(layout, page))
-		templates[name] = tmpl
+		name := strings.TrimSuffix(file.Name(), ".html")
+
+		pageContent, err := templatesFS.ReadFile("templates/" + file.Name())
+		if err != nil {
+			return err
+		}
+
+		// Create a new template and first parse the layout
+		t := template.New("layout.html")
+		t, err = t.Parse(string(layoutContent))
+		if err != nil {
+			return err
+		}
+
+		// Then parse the page template with its content definition
+		t, err = t.Parse(string(pageContent))
+		if err != nil {
+			return err
+		}
+
+		templates[name] = t
 	}
-}
 
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		next.ServeHTTP(w, r)
-		log.Printf(
-			"%s %s %s",
-			r.Method,
-			r.RequestURI,
-			time.Since(start),
-		)
-	})
-}
-
-func htmxMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		isHTMX := r.Header.Get("HX-Request") == "true"
-		ctx := context.WithValue(r.Context(), keyIsHTMX, isHTMX)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+	return nil
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	page := vars["name"]
+	page := chi.URLParam(r, "name")
 
 	tmpl, ok := templates[page]
 	if !ok {
@@ -98,14 +87,16 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"Title": strings.Title(page),
+	data := map[string]any{"Title": strings.Title(page)}
+
+	// Choose template based on whether this is an HTMX request
+	templateName := "layout.html"
+	if r.Header.Get("HX-Request") == "true" {
+		templateName = "content"
 	}
 
-	isHTMX := r.Context().Value(keyIsHTMX).(bool)
-	if isHTMX {
-		tmpl.ExecuteTemplate(w, "content", data)
-	} else {
-		tmpl.ExecuteTemplate(w, "layout.html", data)
+	if err := tmpl.ExecuteTemplate(w, templateName, data); err != nil {
+		log.Printf("Template error: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 }
