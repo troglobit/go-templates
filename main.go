@@ -60,8 +60,7 @@ func main() {
 
 	// Serve static files (for favicon.ico and other assets)
 	fileServer := http.FileServer(http.FS(staticFS))
-	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
-	r.Handle("/favicon.ico", fileServer)
+	r.Handle("/static/*", http.StripPrefix("/", fileServer))
 
 	// Public routes
 	r.Group(func(r chi.Router) {

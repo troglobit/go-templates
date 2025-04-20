@@ -22,7 +22,6 @@ responsive interface.
 ├── main.go                 # Main application with auth and embedded resources
 ├── go.mod                  # Go module definition
 ├── go.sum                  # Go module checksums
-├── favicon.ico             # Application favicon
 ├── templates/              # HTML templates (embedded in binary)
 │   ├── layout.html         # Base layout template
 │   ├── login.html          # Login page
