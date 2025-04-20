@@ -1,0 +1,53 @@
+{{ define "content" }}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">System Login</h4>
+        </div>
+        <div class="card-body">
+          <form action="/login" method="POST">
+            {{ if .Error }}
+            <div class="alert alert-danger" role="alert">
+              {{ if eq .Error "invalid_credentials" }}
+                Invalid username or password
+              {{ else if eq .Error "empty_fields" }}
+                Please enter both username and password
+              {{ else }}
+                An error occurred. Please try again.
+              {{ end }}
+            </div>
+            {{ end }}
+            
+            <div class="mb-3">
+              <label for="username" class="form-label">Username</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" class="form-control" id="username" name="username" autofocus required>
+              </div>
+            </div>
+            
+            <div class="mb-4">
+              <label for="password" class="form-label">Password</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" class="form-control" id="password" name="password" required>
+              </div>
+            </div>
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Log In
+              </button>
+            </div>
+          </form>
+        </div>
+        <div class="card-footer text-center text-muted">
+          <small>Embedded System Management</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{{ end }}
